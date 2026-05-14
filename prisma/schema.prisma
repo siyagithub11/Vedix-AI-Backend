@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum NewsCategory {
+  MODEL
+  TOOLS
+  RESEARCH
+  BUSINESS
+}
+
+enum Pricing {
+  FREE
+  FREEMIUM
+  PAID
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum ToolCategory {
+  WRITING
+  CODING
+  DESIGN
+  VIDEO
+  RESEARCH
+  IMAGE
+  AUDIO
+  OTHER
+}
+
+model News {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  title         String
+  summary       String
+  whyItMatters  String
+  body          String?
+  category      NewsCategory
+  source        String
+  sourceUrl     String
+  imageUrl      String?
+  publishedAt   DateTime
+  readTime      Int           @default(3)
+  isPublished   Boolean       @default(false)
+  blog          Blog?         @relation(fields:[blogId], references:[id])
+  blogId        String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Blog {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  excerpt     String
+  content     String    @db.Text
+  coverImage  String?
+  tags        String[]
+  readTime    Int       @default(8)
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  tools       Tool[]    @relation("BlogTools")
+  news        News[]
+  faq         Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Tool {
+  id          String       @id @default(cuid())
+  slug        String       @unique
+  name        String
+  description String
+  websiteUrl  String
+  logoUrl     String?
+  category    ToolCategory
+  pricing     Pricing
+  skillLevel  SkillLevel
+  rating      Float?
+  isActive    Boolean      @default(true)
+  blogs       Blog[]       @relation("BlogTools")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model AgentLog {
+  id         String   @id @default(cuid())
+  query      String
+  response   String   @db.Text
+  context    Json?
+  createdAt  DateTime @default(now())
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+}
+
+model WeeklyTemplate {
+  id          String   @id @default(cuid())
+  theme       String
+  aiOutline   Json
+  blogId      String?
+  weekDate    DateTime
+  createdAt   DateTime @default(now())
+}
